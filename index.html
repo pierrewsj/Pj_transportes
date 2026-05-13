@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>PJ Transportes</title>
+<meta name="theme-color" content="#020b1f" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#020817;
+  --card:#04142bea;
+  --line:#119ffb77;
+  --cyan:#24e6ff;
+  --blue:#007cff;
+  --text:#f6fbff;
+  --muted:#aebad3;
+  --green:#18f0a1;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Arial,sans-serif;color:var(--text);background:#020817}
+body{
+  background:
+    radial-gradient(circle at 10% 8%,rgba(0,229,255,.18),transparent 28%),
+    radial-gradient(circle at 90% 20%,rgba(0,80,255,.22),transparent 30%),
+    linear-gradient(145deg,#021020 0%,#041a3a 52%,#010714 100%);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background-image:linear-gradient(rgba(62,211,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(62,211,255,.055) 1px,transparent 1px);
+  background-size:34px 34px;
+}
+.hidden{display:none!important}
+.screen{animation:fade .25s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.app{max-width:980px;margin:0 auto;min-height:100vh;padding:18px 14px 105px}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px 14px}
+.login-card,.glass{
+  border:1.5px solid var(--line);
+  background:linear-gradient(180deg,rgba(5,24,50,.92),rgba(2,12,28,.96));
+  box-shadow:0 0 35px rgba(0,185,255,.18),inset 0 0 24px rgba(0,145,255,.08);
+  border-radius:34px;
+  position:relative;
+  overflow:hidden;
+}
+.login-card{width:min(94vw,760px);padding:28px 34px 38px}
+.login-card:before,.glass:before{
+  content:"";position:absolute;left:8%;right:8%;top:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  filter:drop-shadow(0 0 10px var(--cyan));
+}
+.logo-box{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:0 auto 22px;
+}
+.logo{
+  width:min(650px,100%);
+  max-height:310px;
+  object-fit:contain;
+  display:block;
+  border-radius:22px;
+  filter:drop-shadow(0 0 22px rgba(36,230,255,.85));
+}
+.logo-small{
+  width:180px;
+  max-width:34vw;
+  display:block;
+  border-radius:12px;
+  filter:drop-shadow(0 0 14px rgba(36,230,255,.9));
+}
+.login-title{text-align:center;font-size:clamp(44px,8vw,72px);line-height:1;font-weight:900;margin:8px 0 18px}
+.login-sub{text-align:center;color:var(--muted);font-size:clamp(20px,4vw,31px);line-height:1.35;margin:0 auto 42px;max-width:620px}
+.field{
+  display:flex;align-items:center;gap:20px;border:1px solid rgba(148,188,232,.33);
+  background:linear-gradient(180deg,rgba(13,36,65,.72),rgba(7,24,45,.86));
+  border-radius:22px;padding:20px 22px;margin:16px 0;
+}
+.field .icon{width:52px;height:52px;border-radius:16px;background:rgba(0,188,255,.13);display:flex;align-items:center;justify-content:center;font-size:26px}
+input,select,textarea{width:100%;border:0;outline:0;background:transparent;color:var(--text);font:600 20px Inter,Arial,sans-serif}
+input::placeholder,textarea::placeholder{color:#a2aec5}
+textarea{min-height:80px;resize:vertical}
+.btn{
+  border:0;border-radius:22px;padding:22px 26px;font-weight:900;font-size:22px;color:#fff;cursor:pointer;
+  background:linear-gradient(100deg,#073bb9,#0a8cff,#25e6ff);
+  box-shadow:0 0 24px rgba(0,174,255,.5);
+  display:flex;align-items:center;justify-content:center;gap:12px;text-decoration:none;width:100%;
+}
+.btn.secondary{background:transparent;border:1.5px solid var(--cyan);color:var(--cyan);box-shadow:none}
+.hint{text-align:center;color:var(--muted);font-size:21px;margin-top:20px}
+.hint b{color:var(--cyan)}
+.topbar{display:flex;align-items:center;gap:18px;margin:10px 0 28px}
+.topbar h1{font-size:clamp(32px,6vw,56px);margin:0;font-weight:900}
+.spacer{flex:1}
+.round{width:58px;height:58px;border-radius:22px;border:1px solid var(--line);background:rgba(6,27,53,.72);display:grid;place-items:center;color:#fff;font-size:26px}
+.glass{padding:24px;border-radius:26px}
+.grid{display:grid;gap:16px}
+.cards{grid-template-columns:repeat(3,1fr)}
+.two{grid-template-columns:1fr 1fr}
+.metric{min-height:165px}
+.micon{width:58px;height:58px;border:1px solid rgba(36,230,255,.5);border-radius:50%;display:grid;place-items:center;color:var(--blue);font-size:28px;background:rgba(0,150,255,.12)}
+.label{color:var(--muted);font-size:18px;margin:12px 0 18px}
+.value{font-size:31px;font-weight:800}
+.trend{color:var(--green);font-size:15px;margin-top:12px}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:24px 0 14px}
+.section-title h2{margin:0;font-size:26px}
+.link{color:var(--cyan);background:none;border:0;font-weight:800;font-size:16px}
+.trip-card,.list-row{border:1px solid rgba(133,179,231,.25);background:rgba(8,29,55,.72);border-radius:18px;padding:16px;margin-top:10px}
+.trip-card{display:grid;grid-template-columns:1.4fr 1fr .7fr;gap:16px}
+.muted{color:var(--muted)}
+.pill{display:inline-flex;padding:6px 11px;border-radius:999px;background:rgba(0,147,255,.18);color:var(--cyan);font-size:13px;font-weight:800;margin-top:8px}
+.progress{height:10px;border-radius:999px;background:#132945;overflow:hidden}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,#006bff,#26e6ff)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-card .field{padding:16px 18px;border-radius:16px}
+.form-actions{display:grid;gap:14px;margin-top:18px}
+.table-wrap{overflow:auto}
+.data-table{width:100%;border-collapse:separate;border-spacing:0 10px;min-width:720px}
+.data-table th{text-align:left;color:var(--muted);font-size:13px;padding:0 12px}
+.data-table td{background:rgba(7,26,49,.72);border-top:1px solid rgba(133,179,231,.2);border-bottom:1px solid rgba(133,179,231,.2);padding:14px 12px}
+.map-card{height:280px;border-radius:24px;background:radial-gradient(circle at 20% 45%,rgba(36,230,255,.35) 0 2%,transparent 3%),radial-gradient(circle at 76% 55%,rgba(36,230,255,.35) 0 2%,transparent 3%),linear-gradient(135deg,rgba(5,29,57,.9),rgba(3,15,33,.9));border:1px solid var(--line);position:relative;margin-bottom:18px}
+.route-line{position:absolute;left:14%;right:18%;top:50%;height:4px;background:linear-gradient(90deg,var(--cyan),#168cff,var(--cyan));box-shadow:0 0 14px var(--cyan);transform:rotate(8deg)}
+.bottom-nav{
+  position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(930px,94vw);z-index:10;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px;border:1px solid var(--line);border-radius:30px;
+  background:rgba(3,13,30,.9);box-shadow:0 0 30px rgba(0,191,255,.22);backdrop-filter:blur(14px)
+}
+.nav{border:0;background:transparent;color:var(--muted);border-radius:22px;padding:10px 4px;font-weight:800;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.nav span{font-size:23px}
+.nav.active{color:var(--cyan);background:rgba(0,143,255,.12)}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:#062247;border:1px solid var(--cyan);border-radius:16px;padding:14px 18px;color:#fff;box-shadow:0 0 20px rgba(36,230,255,.3);z-index:30;display:none}
+.toast.show{display:block}
+@media(max-width:760px){
+  .app{padding:14px 10px 105px}
+  .login-card{padding:28px 24px 34px}
+  .cards,.two{grid-template-columns:1fr}
+  .trip-card{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .logo-small{width:145px}
+  .glass{padding:18px}
+  .login-title{font-size:46px}
+  .login-sub{font-size:20px}
+  .logo{width:100%;max-height:250px}
+}
+@media(max-width:420px){
+  .login-card{padding:22px 18px 28px}
+  .logo{max-height:210px}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<section id="loginScreen" class="login-wrap screen">
+  <div class="login-card">
+    <div class="logo-box">
+      <img class="logo" src="./assets/logo-pj-nova-futurista.png?v=3" alt="PJ Transportes">
+    </div>
+    <h1 class="login-title">Bem-vindo</h1>
+    <p class="login-sub">Acesse para gerenciar viagens, despesas e resultados.</p>
+    <form id="loginForm">
+      <label class="field"><span class="icon">👤</span><input id="user" autocomplete="username" placeholder="Usuário"></label>
+      <label class="field"><span class="icon">🔐</span><input id="pass" type="password" autocomplete="current-password" placeholder="Senha"></label>
+      <button class="btn" type="submit">🚚 Entrar</button>
+    </form>
+    <div class="hint">Acesso local: <b>admin</b> / <b>1234</b></div>
+  </div>
+</section>
+
+<main id="appScreen" class="app hidden">
+<header class="topbar">
+  <img class="logo-small" src="./assets/logo-pj-nova-futurista.png?v=3" alt="PJ Transportes">
+  <h1 id="pageTitle">Dashboard</h1>
+  <div class="spacer"></div>
+  <button class="round" onclick="logout()">⎋</button>
+</header>
+
+<section id="dashboard" class="screen">
+  <div class="grid cards">
+    <article class="glass metric"><div class="micon">$</div><div class="label">Receita Total</div><div class="value" id="receitaTotal">R$ 0,00</div><div class="trend">controle atualizado</div></article>
+    <article class="glass metric"><div class="micon">↓</div><div class="label">Despesa Total</div><div class="value" id="despesaTotal">R$ 0,00</div><div class="trend">combustível + despesas</div></article>
+    <article class="glass metric"><div class="micon">📈</div><div class="label">Lucro Bruto</div><div class="value" id="lucroTotal">R$ 0,00</div><div class="trend" id="margemResumo">Margem 0%</div></article>
+    <article class="glass metric"><div class="micon">%</div><div class="label">Margem</div><div class="value" id="margemTotal">0%</div><div class="trend">por frete</div></article>
+    <article class="glass metric"><div class="micon">🛣️</div><div class="label">KM Rodados</div><div class="value" id="kmTotal">0 km</div><div class="trend">total das viagens</div></article>
+    <article class="glass metric"><div class="micon">⛽</div><div class="label">Consumo Médio</div><div class="value" id="consumoMedio">0 km/L</div><div class="trend">KM ÷ litros</div></article>
+  </div>
+  <div class="section-title"><h2>🚚 Viagens em andamento</h2><button class="link" onclick="showPage('viagens')">Ver todas</button></div>
+  <div class="glass" id="andamentoList"></div>
+  <div class="grid two" style="margin-top:16px">
+    <div class="glass"><h2>⛽ Despesas recentes</h2><div id="despesasRecentes"></div></div>
+    <div class="glass"><h2>🚛 Resumo por veículo</h2><div id="veiculoResumo"></div></div>
+  </div>
+</section>
+
+<section id="viagens" class="screen hidden">
+  <div class="glass table-wrap">
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>Veículo</th><th>Motorista</th><th>Trecho</th><th>KM</th><th>Frete</th><th>Status</th><th>Ação</th></tr></thead>
+      <tbody id="viagensTable"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="nova" class="screen hidden">
+<form id="tripForm" class="glass form-card">
+<label class="field"><span class="icon">🚛</span><select id="veiculo" required><option value="">Selecione o veículo</option><option>Cegonha</option><option>Fiorino</option><option>PJT-001</option><option>PJT-002</option></select></label>
+<label class="field"><span class="icon">👤</span><input id="motorista" placeholder="Motorista" required></label>
+<label class="field"><span class="icon">🏢</span><input id="cliente" placeholder="Cliente" required></label>
+<div class="form-row"><label class="field"><span class="icon">📍</span><input id="origem" placeholder="Origem" required></label><label class="field"><span class="icon">🎯</span><input id="destino" placeholder="Destino" required></label></div>
+<div class="form-row"><label class="field"><span class="icon">📅</span><input id="dataInicio" type="date" required></label><label class="field"><span class="icon">📅</span><input id="dataFim" type="date"></label></div>
+<div class="form-row"><label class="field"><span class="icon">🧭</span><input id="kmInicial" placeholder="KM inicial" required></label><label class="field"><span class="icon">🧭</span><input id="kmFinal" placeholder="KM final"></label></div>
+<div class="form-row"><label class="field"><span class="icon">📦</span><select id="tipoCarga"><option>Carros</option><option>Motos</option><option>Mudança</option><option>Encomendas</option><option>Entulho</option><option>Outros</option></select></label><label class="field"><span class="icon">#</span><input id="quantidade" placeholder="Quantidade"></label></div>
+<label class="field"><span class="icon">💰</span><input id="valorFrete" placeholder="Valor do frete (R$)" required></label>
+<label class="field"><span class="icon">📌</span><select id="status"><option>Em andamento</option><option>Concluída</option><option>Cancelada</option></select></label>
+<label class="field"><span class="icon">📝</span><textarea id="obs" placeholder="Observações"></textarea></label>
+<div class="form-actions"><button class="btn" type="submit">💾 Salvar viagem</button><button class="btn secondary" type="button" onclick="openMapFromForm()">🗺️ Abrir rota no mapa</button></div>
+</form>
+</section>
+
+<section id="despesas" class="screen hidden">
+<form id="expenseForm" class="glass form-card">
+<label class="field"><span class="icon">🧾</span><select id="despesaViagem" required></select></label>
+<div class="form-row"><label class="field"><span class="icon">📅</span><input id="despesaData" type="date" required></label><label class="field"><span class="icon">🏙️</span><input id="despesaCidade" placeholder="Cidade"></label></div>
+<div class="form-row"><label class="field"><span class="icon">⛽</span><input id="combustivel" placeholder="Combustível R$"></label><label class="field"><span class="icon">💧</span><input id="litros" placeholder="Litros"></label></div>
+<div class="form-row"><label class="field"><span class="icon">🛣️</span><input id="pedagio" placeholder="Pedágio R$"></label><label class="field"><span class="icon">🍽️</span><input id="refeicao" placeholder="Refeição R$"></label></div>
+<div class="form-row"><label class="field"><span class="icon">🛏️</span><input id="hospedagem" placeholder="Hospedagem R$"></label><label class="field"><span class="icon">🔧</span><input id="manutencao" placeholder="Manutenção R$"></label></div>
+<label class="field"><span class="icon">⋯</span><input id="outros" placeholder="Outros R$"></label>
+<button class="btn" type="submit">💾 Salvar despesa</button>
+</form>
+</section>
+
+<section id="rota" class="screen hidden">
+  <div class="glass"><h2 style="color:var(--cyan)">ROTA DA VIAGEM</h2><div class="map-card"><div class="route-line"></div></div><button class="btn secondary" onclick="openSelectedMap()">🗺️ Abrir rota no Google Maps</button></div>
+</section>
+
+<section id="relatorios" class="screen hidden">
+  <div class="grid two"><button class="btn" onclick="gerarPDF()">📄 Gerar PDF</button><button class="btn secondary" onclick="exportarExcel()">📊 Exportar Excel</button></div>
+  <div class="glass" style="margin-top:18px" id="reportSummary"></div>
+</section>
+
+<nav class="bottom-nav">
+<button class="nav active" data-page="dashboard" onclick="showPage('dashboard')"><span>⌂</span>Início</button>
+<button class="nav" data-page="viagens" onclick="showPage('viagens')"><span>🚛</span>Viagens</button>
+<button class="nav" data-page="nova" onclick="showPage('nova')"><span>＋</span>Nova</button>
+<button class="nav" data-page="despesas" onclick="showPage('despesas')"><span>$</span>Despesas</button>
+<button class="nav" data-page="relatorios" onclick="showPage('relatorios')"><span>▥</span>Relatórios</button>
+</nav>
+</main>
+
+<script>
+const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const num=v=>Number(String(v||0).replace(/\./g,'').replace(',','.'))||0;
+const today=()=>new Date().toISOString().slice(0,10);
+const store={
+  get trips(){return JSON.parse(localStorage.getItem('pj_trips')||'[]')},
+  set trips(v){localStorage.setItem('pj_trips',JSON.stringify(v))},
+  get expenses(){return JSON.parse(localStorage.getItem('pj_expenses')||'[]')},
+  set expenses(v){localStorage.setItem('pj_expenses',JSON.stringify(v))}
+};
+function seed(){
+  if(store.trips.length)return;
+  store.trips=[
+    {id:'V001',veiculo:'Cegonha',motorista:'Jorge',cliente:'Carrocerias Heringer',origem:'Betim - MG',destino:'Governador Valadares - MG',dataInicio:'2026-05-07',dataFim:'2026-05-07',kmInicial:1125651,kmFinal:1125988,tipoCarga:'Outros',valorFrete:0,status:'Concluída'},
+    {id:'V002',veiculo:'Cegonha',motorista:'Jorge',cliente:'GS Jateamento e Pinturas Industriais',origem:'Governador Valadares - MG',destino:'Sorocaba - SP',dataInicio:'2026-05-07',dataFim:'2026-05-08',kmInicial:1125988,kmFinal:1126986,tipoCarga:'Carros',valorFrete:14400,status:'Em andamento'}
+  ];
+  store.expenses=[
+    {id:'D001',tripId:'V001',data:'2026-05-07',cidade:'Betim',combustivel:2000,litros:298,pedagio:113,refeicao:80,hospedagem:0,manutencao:0,outros:0},
+    {id:'D002',tripId:'V001',data:'2026-05-07',cidade:'Governador Valadares',combustivel:0,litros:0,pedagio:0,refeicao:55,hospedagem:0,manutencao:0,outros:0}
+  ];
+}
+function toast(m){let t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300)}
+loginForm.onsubmit=e=>{e.preventDefault();if(user.value==='admin'&&pass.value==='1234'){loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');renderAll()}else toast('Usuário ou senha inválidos')};
+function logout(){appScreen.classList.add('hidden');loginScreen.classList.remove('hidden')}
+function showPage(id){
+  document.querySelectorAll('#appScreen>section').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  pageTitle.textContent={dashboard:'Dashboard',viagens:'Viagens',nova:'Nova Viagem',despesas:'Despesas',rota:'Rota',relatorios:'Relatórios'}[id]||'PJ Transportes';
+  document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+  renderAll();
+}
+function tripExpenseTotal(id){return store.expenses.filter(e=>e.tripId===id).reduce((s,e)=>s+['combustivel','pedagio','refeicao','hospedagem','manutencao','outros'].reduce((a,k)=>a+num(e[k]),0),0)}
+function km(t){return Math.max(0,num(t.kmFinal)-num(t.kmInicial))}
+function renderAll(){
+  let trips=store.trips,exps=store.expenses,receita=trips.reduce((s,t)=>s+num(t.valorFrete),0),desp=trips.reduce((s,t)=>s+tripExpenseTotal(t.id),0),lucro=receita-desp,kms=trips.reduce((s,t)=>s+km(t),0),litros=exps.reduce((s,e)=>s+num(e.litros),0);
+  receitaTotal.textContent=money(receita);despesaTotal.textContent=money(desp);lucroTotal.textContent=money(lucro);margemTotal.textContent=(receita?lucro/receita*100:0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';margemResumo.textContent='Margem '+margemTotal.textContent;kmTotal.textContent=kms.toLocaleString('pt-BR')+' km';consumoMedio.textContent=(litros?kms/litros:0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' km/L';
+  andamentoList.innerHTML=trips.filter(t=>t.status==='Em andamento').map(t=>`<div class="trip-card"><div><b>${t.origem} → ${t.destino}</b><br><span class="muted">Carga: ${t.tipoCarga}</span><br><span class="pill">● Em trânsito</span></div><div><span class="muted">Previsão</span><br><b>${t.dataFim||t.dataInicio}</b></div><div><b>75%</b><div class="progress"><span style="width:75%"></span></div></div></div>`).join('')||'<p class="muted">Nenhuma viagem em andamento.</p>';
+  despesasRecentes.innerHTML=exps.slice(-4).reverse().map(e=>`<div class="list-row"><b>${e.cidade||'Despesa'}</b><br><span class="muted">${e.data}</span> — ${money(['combustivel','pedagio','refeicao','hospedagem','manutencao','outros'].reduce((a,k)=>a+num(e[k]),0))}</div>`).join('');
+  veiculoResumo.innerHTML=[...new Set(trips.map(t=>t.veiculo))].map(v=>`<div class="list-row"><b>${v}</b><br><span class="muted">${trips.filter(t=>t.veiculo===v).reduce((s,t)=>s+km(t),0)} km</span></div>`).join('');
+  viagensTable.innerHTML=trips.map(t=>`<tr><td>${t.id}</td><td>${t.veiculo}</td><td>${t.motorista}</td><td>${t.origem} → ${t.destino}</td><td>${km(t)}</td><td>${money(t.valorFrete)}</td><td>${t.status}</td><td><button class="link" onclick="selectRoute('${t.id}')">Abrir</button></td></tr>`).join('');
+  despesaViagem.innerHTML=trips.map(t=>`<option value="${t.id}">${t.id} — ${t.origem} → ${t.destino}</option>`).join('');
+  if(!despesaData.value)despesaData.value=today();
+  reportSummary.innerHTML=`<h2>Resumo financeiro</h2><p>Receita: <b>${money(receita)}</b></p><p>Despesa: <b>${money(desp)}</b></p><p>Lucro: <b>${money(lucro)}</b></p>`;
+}
+tripForm.onsubmit=e=>{
+  e.preventDefault();
+  let a=store.trips,id='V'+String(a.length+1).padStart(3,'0');
+  a.push({id,veiculo:veiculo.value,motorista:motorista.value,cliente:cliente.value,origem:origem.value,destino:destino.value,dataInicio:dataInicio.value,dataFim:dataFim.value,kmInicial:num(kmInicial.value),kmFinal:num(kmFinal.value),tipoCarga:tipoCarga.value,valorFrete:num(valorFrete.value),status:status.value});
+  store.trips=a;tripForm.reset();toast('Viagem salva');showPage('dashboard');
+};
+expenseForm.onsubmit=e=>{
+  e.preventDefault();
+  let a=store.expenses;
+  a.push({id:'D'+String(a.length+1).padStart(3,'0'),tripId:despesaViagem.value,data:despesaData.value,cidade:despesaCidade.value,combustivel:num(combustivel.value),litros:num(litros.value),pedagio:num(pedagio.value),refeicao:num(refeicao.value),hospedagem:num(hospedagem.value),manutencao:num(manutencao.value),outros:num(outros.value)});
+  store.expenses=a;expenseForm.reset();toast('Despesa salva');showPage('dashboard');
+};
+let selectedTrip=null;
+function selectRoute(id){selectedTrip=store.trips.find(t=>t.id===id);showPage('rota')}
+function openMapFromForm(){if(!origem.value||!destino.value)return toast('Informe origem e destino');window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem.value)}&destination=${encodeURIComponent(destino.value)}&travelmode=driving`,'_blank')}
+function openSelectedMap(){let t=selectedTrip||store.trips[0];if(t)window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(t.origem)}&destination=${encodeURIComponent(t.destino)}&travelmode=driving`,'_blank')}
+function gerarPDF(){let{jsPDF}=window.jspdf,doc=new jsPDF();doc.text('PJ Transportes - Relatório',14,18);let y=32;store.trips.forEach(t=>{doc.text(`${t.id} | ${t.veiculo} | ${t.origem} -> ${t.destino} | Frete: ${money(t.valorFrete)}`,14,y);y+=8});doc.save('pj-transportes-relatorio.pdf')}
+function exportarExcel(){let wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(store.trips),'Viagens');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(store.expenses),'Despesas');XLSX.writeFile(wb,'pj-transportes.xlsx')}
+seed();
+</script>
+</body>
+</html>
